@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	validConnectionString = "Endpoint=sb://some-namespace.servicebus.windows.net/;SharedAccessKeyName=XXXXXXXX;SharedAccessKey=XXXXXXXX"
-	deviceToken           = "00fc13adff785122b4ad28809a3420982341241421348097878e577c991de8f0"
-	hubName               = "some"
-	messageBody           = `{"aps": { "alert": { "title": "My title", "body": "My body" } } }"`
+	validConnectionString = "<Some-Connection-String>"
+	deviceToken           = "<Some-Token>"
+	hubName               = "<Some-Hub>"
+	messageBody           = `{"aps": { "alert": { "title": "My title", "body": "My body" } } }`
 )
 
 func TestParseConnectionString(t *testing.T) {
@@ -18,11 +18,11 @@ func TestParseConnectionString(t *testing.T) {
 		t.Fatalf(`FromConnectionString = %q, %v`, parsedConnection, err)
 	}
 
-	if !strings.EqualFold(parsedConnection.Endpoint, "sb://some-namespace.servicebus.windows.net/") {
+	if !strings.EqualFold(parsedConnection.Endpoint, "sb://sdk-sample-namespace.servicebus.windows.net/") {
 		t.Fatalf(`ParsedConnection.EndPoint = %q`, parsedConnection.Endpoint)
 	}
 
-	if !strings.EqualFold(parsedConnection.KeyName, "XXXXXXXX") {
+	if !strings.EqualFold(parsedConnection.KeyName, "NewFullAccessPolicy") {
 		t.Fatalf(`ParsedConnection.KeyName = %q`, parsedConnection.KeyName)
 	}
 }
@@ -50,6 +50,6 @@ func TestDirectSend(t *testing.T) {
 
 	response, err := client.SendDirectNotification(request, deviceToken)
 	if response == nil || err != nil {
-		t.Fatalf(`client.SendDirectNotification %v`, err)
+		t.Fatalf(`NewNotificationHubClientWithConnectionString %v`, err)
 	}
 }

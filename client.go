@@ -47,8 +47,7 @@ func createStringToSign(uri string) (signature string, expiration int64) {
 func (t *TokenProvider) signString(str string) string {
 	h := hmac.New(sha256.New, []byte(t.KeyValue))
 	h.Write([]byte(str))
-	encodedSig := base64.StdEncoding.EncodeToString(h.Sum(nil))
-	return url.QueryEscape(encodedSig)
+	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
 const (
@@ -143,7 +142,6 @@ func (n *NotificationHubClient) SendDirectNotification(notificationRequest *Noti
 	fixedHost := strings.Replace(n.HostName, "sb://", "https://", -1)
 
 	requestUri := fmt.Sprintf("%v%v/messages/?api-version=%v&direct=true", fixedHost, n.HubName, apiVersion)
-	fmt.Printf("URI: %v\n", requestUri)
 
 	messageBody := []byte(notificationRequest.Message)
 
@@ -154,8 +152,6 @@ func (n *NotificationHubClient) SendDirectNotification(notificationRequest *Noti
 	}
 
 	sasToken := n.TokenProvider.GenerateSasToken(n.HostName)
-	fmt.Printf("Signature Host: %v\n", n.HostName)
-	fmt.Printf("SAS Token: %v\n", sasToken)
 
 	for headerName, headerValue := range notificationRequest.Headers {
 		req.Header.Add(headerName, headerValue)
