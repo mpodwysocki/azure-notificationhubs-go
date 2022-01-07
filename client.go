@@ -40,7 +40,7 @@ func (t *TokenProvider) GenerateSasToken(uri string) string {
 }
 
 func createStringToSign(uri string) (signature string, expiration int64) {
-	expiry := time.Now().Unix() + int64(3600)
+	expiry := time.Now().UTC().Unix() + int64(3600)
 	return fmt.Sprintf("%s\n%d", url.QueryEscape(uri), expiry), expiry
 }
 
