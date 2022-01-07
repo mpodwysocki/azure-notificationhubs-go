@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -27,17 +26,22 @@ func NewTokenProvider(keyName string, keyValue string) *TokenProvider {
 }
 
 func (t *TokenProvider) GenerateSasToken(uri string) string {
-	audience := strings.ToLower(url.QueryEscape(uri))
+	audience := strings.ToLower(uri)
 	sts, expiration := createStringToSign(audience)
 	sig := t.signString(sts)
-	return fmt.Sprintf("SharedAccessSignature sr=%s&sig=%s&se=%s&skn=%s", audience, sig, expiration, t.KeyName)
+	tokenParams := url.Values{
+		"sr":  {audience},
+		"sig": {sig},
+		"se":  {fmt.Sprintf("%d", expiration)},
+		"skn": {t.KeyName},
+	}
+
+	return fmt.Sprintf("SharedAccessSignature %s", tokenParams.Encode())
 }
 
-func createStringToSign(uri string) (signature string, expiration string) {
-	expiry := time.Now().UTC().Add(time.Hour).Round(time.Second).Unix()
-	expiryTime := strconv.FormatInt(expiry, 10)
-	audience := strings.ToLower(url.QueryEscape(uri))
-	return audience + "\n" + expiryTime, expiryTime
+func createStringToSign(uri string) (signature string, expiration int64) {
+	expiry := time.Now().Unix() + int64(3600)
+	return fmt.Sprintf("%s\n%d", url.QueryEscape(uri), expiry), expiry
 }
 
 func (t *TokenProvider) signString(str string) string {
@@ -137,7 +141,6 @@ func NewNotificationHubClientWithConnectionString(connectionString string, hubNa
 func (n *NotificationHubClient) SendDirectNotification(notificationRequest *NotificationRequest, deviceToken string) (*NotificationResponse, error) {
 	var correlationId, trackingId string
 	fixedHost := strings.Replace(n.HostName, "sb://", "https://", -1)
-	signatureHost := strings.Replace(n.HostName, "sb://", "http://", -1)
 
 	requestUri := fmt.Sprintf("%v%v/messages/?api-version=%v&direct=true", fixedHost, n.HubName, apiVersion)
 	fmt.Printf("URI: %v\n", requestUri)
@@ -150,15 +153,15 @@ func (n *NotificationHubClient) SendDirectNotification(notificationRequest *Noti
 		return nil, err
 	}
 
-	sasToken := n.TokenProvider.GenerateSasToken(signatureHost)
-	sasToken = strings.Replace(sasToken, "%3D", "%3d", -1)
-	fmt.Printf("Signature Host: %v", signatureHost)
-	fmt.Printf("SAS Token: %v", sasToken)
+	sasToken := n.TokenProvider.GenerateSasToken(n.HostName)
+	fmt.Printf("Signature Host: %v\n", n.HostName)
+	fmt.Printf("SAS Token: %v\n", sasToken)
 
 	for headerName, headerValue := range notificationRequest.Headers {
 		req.Header.Add(headerName, headerValue)
 	}
 
+	req.Header.Add("x-target-pipeline", "legacy")
 	req.Header.Add("Content-Type", notificationRequest.ContentType)
 	req.Header.Add("Authorization", sasToken)
 	req.Header.Add("ServiceBusNotification-DeviceHandle", deviceToken)
