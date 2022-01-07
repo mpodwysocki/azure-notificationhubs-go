@@ -11,6 +11,13 @@ Below are code snippets for each scenario that the SDK covers.
 This example uses the [Direct Send API](https://docs.microsoft.com/en-us/rest/api/notificationhubs/direct-send) to send a message to an Apple device through APNs.
 
 ```go
+const (
+	validConnectionString = "<Some-Connection-String>"
+	deviceToken           = "<Some-Token>"
+	hubName               = "<Some-Hub>"
+	messageBody           = `{"aps": { "alert": { "title": "My title", "body": "My body" } } }`
+)
+
 func TestDirectSend() {
 	client, err := NewNotificationHubClientWithConnectionString(validConnectionString, hubName)
 	if client == nil || err != nil {
