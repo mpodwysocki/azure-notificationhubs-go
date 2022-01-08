@@ -11,15 +11,19 @@ Below are code snippets for each scenario that the SDK covers.
 This example uses the [Direct Send API](https://docs.microsoft.com/en-us/rest/api/notificationhubs/direct-send) to send a message to an Apple device through APNs.
 
 ```go
+import (
+    "github.com/mpodwysocki/azure-notificationhubs-go/client"
+)
+
 const (
-	validConnectionString = "<Some-Connection-String>"
+	connectionString = "<Some-Connection-String>"
 	deviceToken           = "<Some-Token>"
 	hubName               = "<Some-Hub>"
 	messageBody           = `{"aps": { "alert": { "title": "My title", "body": "My body" } } }`
 )
 
 func TestDirectSend() {
-	client, err := NewNotificationHubClientWithConnectionString(validConnectionString, hubName)
+	client, err := NewNotificationHubClientWithConnectionString(connectionString, hubName)
 	if client == nil || err != nil {
 		panic(err)
 	}
@@ -49,12 +53,12 @@ func TestDirectSend() {
 ## Status
 
 - Added Direct Send
+- Added Tag-Based Send for Tags list or Tag Expression
 
 ### TODO
 
 - Installation Support
 - Registration Support
-- Tag-Based Send
 - Template Send
 - Scheduled Send
 
